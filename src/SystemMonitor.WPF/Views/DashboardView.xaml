@@ -14,26 +14,70 @@
             </Grid.RowDefinitions>
 
             <!-- ── Alert Banner ──────────────────────────────────────── -->
-            <Border Grid.Row="0"
-                    Background="#B71C1C" CornerRadius="8"
-                    Padding="14 10" Margin="0 0 0 12"
-                    Visibility="{Binding AlertVisible, Converter={StaticResource BoolToVisibility}}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="{Binding AlertMessage}"
-                               FontWeight="SemiBold" Foreground="White"
-                               VerticalAlignment="Center"/>
-                    <Button Grid.Column="1" Content="✕"
-                            Background="Transparent" BorderThickness="0"
-                            Foreground="White" Cursor="Hand"
-                            Command="{Binding DismissAlertCommand}"
-                            FontSize="14" Padding="6 0"/>
-                </Grid>
-            </Border>
+            <ItemsControl Grid.Row="0"
+              ItemsSource="{Binding Alerts}">
+
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+
+                    <DataTemplate>
+
+                        <Border Background="#B71C1C"
+                    CornerRadius="10"
+                    Padding="14 10"
+                    Margin="0 0 0 10">
+
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Alert Content -->
+                                <StackPanel Grid.Column="0">
+
+                                    <TextBlock Text="{Binding MetricName}"
+                                   FontWeight="Bold"
+                                   Foreground="White"
+                                   FontSize="12"/>
+
+                                    <TextBlock Text="{Binding Message}"
+                                   Foreground="White"
+                                   Margin="0 4 0 0"
+                                   TextWrapping="Wrap"/>
+
+                                </StackPanel>
+
+                                <!-- Close Button -->
+                                <Button Grid.Column="1"
+                            Content="✕"
+                            Width="28"
+                            Height="28"
+                            Margin="12 0 0 0"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="White"
+                            Cursor="Hand"
+                            FontWeight="Bold"
+                            Command="{Binding DataContext.DismissAlertCommand,
+                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"/>
+
+                            </Grid>
+
+                        </Border>
+
+                    </DataTemplate>
+
+                </ItemsControl.ItemTemplate>
+
+            </ItemsControl>
 
             <!-- ── Metric Cards ────────────────────────────────────── -->
             <UniformGrid Grid.Row="1" Columns="3" Margin="0 0 0 12">

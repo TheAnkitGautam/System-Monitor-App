@@ -120,7 +120,7 @@ public sealed partial class MainViewModel : ViewModelBase
         object? sender,
         AlertEventArgs e)
     {
-        Dashboard.ShowAlert(e.Message);
+        Dashboard.ShowAlert(e.MetricName, e.Message);
     }
 
     // ─────────────────────────────────────────────────────

@@ -1,11 +1,13 @@
-using System.Collections.ObjectModel;
-using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
+using System.Collections.ObjectModel;
+using System.Windows;
 using SystemMonitor.Core.Models;
+using SystemMonitor.WPF.Models;
 
 namespace SystemMonitor.WPF.ViewModels;
 
@@ -30,8 +32,7 @@ public sealed partial class DashboardViewModel : ViewModelBase
     [ObservableProperty] private long _diskTotalMb;
     [ObservableProperty] private double _diskPercent;
     [ObservableProperty] private string _lastUpdated = "--:--:--";
-    [ObservableProperty] private string _alertMessage = string.Empty;
-    [ObservableProperty] private bool _alertVisible;
+    public ObservableCollection<AlertNotification> Alerts { get; } = new();
 
     // ── Chart data ──────────────────────────────────────────────────────────
 
@@ -132,23 +133,36 @@ public sealed partial class DashboardViewModel : ViewModelBase
         });
     }
 
-    /// <summary>Shows an alert banner in the dashboard.</summary>
-    public void ShowAlert(string message)
+    /// Shows an alert banner in the dashboard.
+    public async void ShowAlert(string metric, string message)
     {
-        Application.Current.Dispatcher.Invoke(() =>
+        var alert = new AlertNotification
         {
-            AlertMessage = message;
-            AlertVisible = true;
+            MetricName = metric,
+            Message = message
+        };
+
+        await Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            Alerts.Insert(0, alert);
+        });
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(5000);
+
+            await Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                Alerts.Remove(alert);
+            });
         });
     }
 
-    public void DismissAlert()
+    [RelayCommand]
+    private void DismissAlert(AlertNotification alert)
     {
-        AlertVisible = false;
+        Alerts.Remove(alert);
     }
-
-    [CommunityToolkit.Mvvm.Input.RelayCommand]
-    private void DismissAlertCmd() => DismissAlert();
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
