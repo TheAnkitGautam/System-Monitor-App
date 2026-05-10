@@ -1,0 +1,433 @@
+PROJECT TREE
+
+├───plugins
+│   ├───SystemMonitor.Plugin.ApiPost
+│   │   ├───ApiPostOptions.cs
+│   │   ├───ApiPostPlugin.cs
+│   │   └───SystemMonitor.Plugin.ApiPost.csproj
+│   ├───SystemMonitor.Plugin.FileLogger
+│   │   ├───FileLoggerOptions.cs
+│   │   ├───FileLoggerPlugin.cs
+│   │   └───SystemMonitor.Plugin.FileLogger.csproj
+│   ├───SystemMonitor.Plugin.RealtimeData
+│   │   ├───RealtimeDataOptions.cs
+│   │   ├───RealtimeDataPlugin.cs
+│   │   └───SystemMonitor.Plugin.RealtimeData.csproj
+│   └───SystemMonitor.Plugin.ThresholdAlert
+│       ├───SystemMonitor.Plugin.ThresholdAlert.csproj
+│       └───ThresholdAlertPlugin.cs
+├───src
+│   ├───SystemMonitor.AppLogic
+│   │   ├───Configuration
+│   │   │   └───MonitoringOptions.cs
+│   │   ├───Extensions
+│   │   │   └───ServiceCollectionExtensions.cs
+│   │   ├───MonitoringService.cs
+│   │   └───SystemMonitor.AppLogic.csproj
+│   ├───SystemMonitor.Core
+│   │   ├───Interfaces
+│   │   │   ├───IMonitoringService.cs
+│   │   │   ├───IMonitorPlugin.cs
+│   │   │   └───ISystemMetricsProvider.cs
+│   │   ├───Models
+│   │   │   ├───Metrics.cs
+│   │   │   └───SystemSnapshot.cs
+│   │   └───SystemMonitor.Core.csproj
+│   ├───SystemMonitor.Infrastructure
+│   │   ├───Providers
+│   │   │   ├───LinuxMetricsProvider.cs
+│   │   │   ├───MacOsMetricsProvider.cs
+│   │   │   ├───MetricsProviderFactory.cs
+│   │   │   └───WindowsMetricsProvider.cs
+│   │   └───SystemMonitor.Infrastructure.csproj
+│   ├───SystemMonitor.Services
+│   ├───SystemMonitor.WPF
+│   │   ├───Converters
+│   │   │   └───Converters.cs
+│   │   ├───Models
+│   │   │   └───AlertNotification.cs
+│   │   ├───Resources
+│   │   │   └───monitor.ico
+│   │   ├───ViewModels
+│   │   │   ├───DashboardViewModel.cs
+│   │   │   ├───MainViewModel.cs
+│   │   │   ├───PluginsViewModel.cs
+│   │   │   ├───SettingsViewModel.cs
+│   │   │   └───ViewModelBase.cs
+│   │   ├───Views
+│   │   │   ├───DashboardView.xaml
+│   │   │   ├───DashboardView.xaml.cs
+│   │   │   ├───MainWindow.xaml
+│   │   │   ├───MainWindow.xaml.cs
+│   │   │   ├───PluginsView.xaml
+│   │   │   ├───PluginsView.xaml.cs
+│   │   │   ├───SettingsView.xaml
+│   │   │   └───SettingsView.xaml.cs
+│   │   ├───App.xaml
+│   │   ├───App.xaml.cs
+│   │   ├───appsettings.json
+│   │   └───SystemMonitor.WPF.csproj
+│   └───SystemMonitor.csproj
+├───.gitignore
+├───project_map.txt
+└───SystemMonitor.sln
+
+
+================================================================================
+PROJECT REFERENCES
+================================================================================
+
+SystemMonitor.Plugin.ApiPost
+  └── SystemMonitor.Core
+
+SystemMonitor.Plugin.FileLogger
+  └── SystemMonitor.Core
+
+SystemMonitor.Plugin.RealtimeData
+  └── SystemMonitor.Core
+
+SystemMonitor.Plugin.ThresholdAlert
+  └── SystemMonitor.Core
+
+SystemMonitor
+  └── (no project references)
+
+SystemMonitor.AppLogic
+  └── SystemMonitor.Core
+  └── SystemMonitor.Core
+
+SystemMonitor.Core
+  └── (no project references)
+
+SystemMonitor.Infrastructure
+  └── SystemMonitor.Core
+  └── SystemMonitor.Core
+
+SystemMonitor.WPF
+  └── SystemMonitor.Plugin.RealtimeData
+  └── SystemMonitor.Core
+  └── SystemMonitor.AppLogic
+  └── SystemMonitor.Plugin.FileLogger
+  └── SystemMonitor.Plugin.ApiPost
+  └── SystemMonitor.Plugin.ThresholdAlert
+  └── SystemMonitor.Core
+  └── SystemMonitor.AppLogic
+  └── SystemMonitor.Infrastructure
+  └── SystemMonitor.AppLogic
+
+================================================================================
+FILE MAP — CLASSES / CONSTRUCTORS / METHODS / PROPERTIES
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.ApiPost\ApiPostOptions.cs
+--------------------------------------------------------------------------------
+[CLASS]        L4    public sealed class ApiPostOptions
+[PROPERTY]     L7    public bool Enabled { get; set; }
+[PROPERTY]     L8    public string? Endpoint { get; set; }
+[PROPERTY]     L9    public int TimeoutSeconds { get; set; }
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.ApiPost\ApiPostPlugin.cs
+--------------------------------------------------------------------------------
+[CLASS]        L8    public sealed class ApiPostPlugin : IMonitorPlugin
+[METHOD]       L11   private readonly IOptionsMonitor<ApiPostOptions> _options;
+[PROPERTY]     L15   public bool IsEnabled { get; set; }
+[CONSTRUCTOR]  L17   public ApiPostPlugin(
+[METHOD]       L31   public async Task OnMetricsCollectedAsync(SystemSnapshot snapshot)
+[METHOD]       L61   private void ApplyOptions(ApiPostOptions options)
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.FileLogger\FileLoggerOptions.cs
+--------------------------------------------------------------------------------
+[CLASS]        L2    public sealed class FileLoggerOptions
+[PROPERTY]     L5    public bool Enabled { get; set; }
+[PROPERTY]     L6    public string? FilePath { get; set; }
+[PROPERTY]     L7    public int MaxFileSizeMb { get; set; }
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.FileLogger\FileLoggerPlugin.cs
+--------------------------------------------------------------------------------
+[CLASS]        L9    public sealed class FileLoggerPlugin : IMonitorPlugin
+[METHOD]       L11   private readonly IOptionsMonitor<FileLoggerOptions> _options;
+[METHOD]       L13   private readonly SemaphoreSlim _writeLock = new(1, 1);
+[METHOD]       L19   private static readonly JsonSerializerOptions JsonOptions = new()
+[PROPERTY]     L26   public bool IsEnabled { get; set; }
+[CONSTRUCTOR]  L28   public FileLoggerPlugin(
+[METHOD]       L40   public async Task OnMetricsCollectedAsync(SystemSnapshot snapshot)
+[METHOD]       L77   private async Task WriteSnapshotAsync(SystemSnapshot snapshot)
+[METHOD]       L131  private void ApplyOptions(FileLoggerOptions options)
+[METHOD]       L136  private static void RotateLog(string filePath)
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.RealtimeData\RealtimeDataOptions.cs
+--------------------------------------------------------------------------------
+[CLASS]        L3    public sealed class RealtimeDataOptions
+[PROPERTY]     L6    public bool Enabled { get; set; }
+[PROPERTY]     L7    public string? ServerUrl { get; set; }
+[PROPERTY]     L8    public int ReconnectDelaySeconds { get; set; }
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.RealtimeData\RealtimeDataPlugin.cs
+--------------------------------------------------------------------------------
+[CLASS]        L10   public sealed class RealtimeDataPlugin : IMonitorPlugin, IDisposable
+[METHOD]       L12   private readonly IOptionsMonitor<RealtimeDataOptions> _options;
+[METHOD]       L14   private readonly SemaphoreSlim _connectionLock = new(1, 1);
+[PROPERTY]     L22   public bool IsEnabled { get; set; }
+[CONSTRUCTOR]  L24   public RealtimeDataPlugin(
+[METHOD]       L34   public async Task OnMetricsCollectedAsync(
+[METHOD]       L80   private async Task EnsureConnectedAsync()
+[METHOD]       L114  private async Task ResetConnectionAsync()
+[METHOD]       L138  private void ApplyOptions(
+[METHOD]       L144  public void Dispose()
+
+--------------------------------------------------------------------------------
+FILE: plugins\SystemMonitor.Plugin.ThresholdAlert\ThresholdAlertPlugin.cs
+--------------------------------------------------------------------------------
+[CLASS]        L8    public sealed class ThresholdAlertOptions
+[PROPERTY]     L12   public bool Enabled { get; set; }
+[PROPERTY]     L14   public double CpuThreshold { get; set; }
+[PROPERTY]     L16   public double RamThresholdPercent { get; set; }
+[PROPERTY]     L18   public double DiskThresholdPercent { get; set; }
+[PROPERTY]     L20   public int CooldownSeconds { get; set; }
+[CLASS]        L23   public sealed class AlertEventArgs : EventArgs
+[PROPERTY]     L25   public string MetricName { get; init; } = string.Empty;
+[PROPERTY]     L27   public double Value { get; init; }
+[PROPERTY]     L29   public double Threshold { get; init; }
+[PROPERTY]     L31   public string Message { get; init; } = string.Empty;
+[PROPERTY]     L33   public DateTime TriggeredAt { get; init; } = DateTime.Now;
+[CLASS]        L36   public sealed class ThresholdAlertPlugin : IMonitorPlugin
+[METHOD]       L38   private readonly IOptionsMonitor<ThresholdAlertOptions> _options;
+[METHOD]       L40   private readonly Dictionary<string, DateTime> _lastAlertTimes = new();
+[PROPERTY]     L44   public bool IsEnabled { get; set; }
+[METHOD]       L46   public event EventHandler<AlertEventArgs>? AlertTriggered;
+[CONSTRUCTOR]  L48   public ThresholdAlertPlugin(
+[METHOD]       L60   public Task OnMetricsCollectedAsync(SystemSnapshot snapshot)
+[METHOD]       L94   private void CheckThreshold(
+[METHOD]       L131  private void ApplyOptions(ThresholdAlertOptions options)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.AppLogic\Configuration\MonitoringOptions.cs
+--------------------------------------------------------------------------------
+[CLASS]        L2    public sealed class MonitoringOptions
+[PROPERTY]     L5    public int IntervalSeconds { get; set; }
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.AppLogic\Extensions\ServiceCollectionExtensions.cs
+--------------------------------------------------------------------------------
+[CLASS]        L11   public static class ServiceCollectionExtensions
+[METHOD]       L17   public static IServiceCollection AddMonitoringServices(
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.AppLogic\MonitoringService.cs
+--------------------------------------------------------------------------------
+[CLASS]        L9    public sealed class MonitoringService : IMonitoringService, IDisposable
+[METHOD]       L12   private readonly IEnumerable<IMonitorPlugin> _plugins;
+[METHOD]       L13   private readonly IOptionsMonitor<MonitoringOptions> _options;
+[METHOD]       L16   private readonly SemaphoreSlim _stateLock = new(1, 1);
+[METHOD]       L24   public event EventHandler<SystemSnapshot>? SnapshotReady;
+[METHOD]       L26   public event EventHandler<PluginErrorEventArgs>? PluginError;
+[CONSTRUCTOR]  L31   public MonitoringService(
+[METHOD]       L45   public async Task StartAsync(
+[METHOD]       L81   public async Task StopAsync(
+[METHOD]       L126  public async Task RestartAsync(
+[METHOD]       L136  private async Task ProcessSnapshotAsync()
+[METHOD]       L168  private async Task RunLoopAsync(
+[METHOD]       L231  private async Task SafeInvokePluginAsync(
+[METHOD]       L257  private async Task<SystemSnapshot> CollectSnapshotAsync()
+[METHOD]       L285  public void Dispose()
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Core\Interfaces\IMonitoringService.cs
+--------------------------------------------------------------------------------
+[CLASS]        L4    public interface IMonitoringService
+[CLASS]        L13   public sealed class PluginErrorEventArgs : EventArgs
+[PROPERTY]     L15   public string PluginName { get; init; } = string.Empty;
+[PROPERTY]     L16   public Exception Exception { get; init; } = null!;
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Core\Interfaces\IMonitorPlugin.cs
+--------------------------------------------------------------------------------
+[CLASS]        L4    public interface IMonitorPlugin
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Core\Interfaces\ISystemMetricsProvider.cs
+--------------------------------------------------------------------------------
+[CLASS]        L4    public interface ISystemMetricsProvider
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Core\Models\Metrics.cs
+--------------------------------------------------------------------------------
+[CLASS]        L3    public record MemoryMetrics(long UsedMb, long TotalMb);
+[CLASS]        L4    public record DiskMetrics(long UsedMb, long TotalMb);
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Core\Models\SystemSnapshot.cs
+--------------------------------------------------------------------------------
+[CLASS]        L2    public record SystemSnapshot(
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Infrastructure\Providers\LinuxMetricsProvider.cs
+--------------------------------------------------------------------------------
+[CLASS]        L8    public sealed class LinuxMetricsProvider : ISystemMetricsProvider
+[METHOD]       L10   public Task<double> GetCpuUsageAsync() =>
+[METHOD]       L14   public Task<MemoryMetrics> GetRamUsageAsync() =>
+[METHOD]       L18   public Task<DiskMetrics> GetDiskUsageAsync() =>
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Infrastructure\Providers\MacOsMetricsProvider.cs
+--------------------------------------------------------------------------------
+[CLASS]        L8    public sealed class MacOsMetricsProvider : ISystemMetricsProvider
+[METHOD]       L10   public Task<double> GetCpuUsageAsync() =>
+[METHOD]       L14   public Task<MemoryMetrics> GetRamUsageAsync() =>
+[METHOD]       L18   public Task<DiskMetrics> GetDiskUsageAsync() =>
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Infrastructure\Providers\MetricsProviderFactory.cs
+--------------------------------------------------------------------------------
+[CLASS]        L6    public static class MetricsProviderFactory
+[METHOD]       L8    public static ISystemMetricsProvider Create()
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.Infrastructure\Providers\WindowsMetricsProvider.cs
+--------------------------------------------------------------------------------
+[CLASS]        L9    public sealed class WindowsMetricsProvider : ISystemMetricsProvider, IDisposable
+[CONSTRUCTOR]  L15   public WindowsMetricsProvider()
+[METHOD]       L20   public async Task<double> GetCpuUsageAsync()
+[METHOD]       L27   public Task<MemoryMetrics> GetRamUsageAsync()
+[METHOD]       L41   public Task<DiskMetrics> GetDiskUsageAsync()
+[CLASS]        L63   private class MEMORYSTATUSEX
+[METHOD]       L78   private static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX lpBuffer);
+[METHOD]       L80   public void Dispose()
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\App.xaml.cs
+--------------------------------------------------------------------------------
+[CLASS]        L18   public partial class App : System.Windows.Application
+[METHOD]       L22   protected override async void OnStartup(StartupEventArgs e)
+[METHOD]       L88   protected override async void OnExit(ExitEventArgs e)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Converters\Converters.cs
+--------------------------------------------------------------------------------
+[CLASS]        L13   public sealed class PercentToColorConverter : IValueConverter
+[METHOD]       L15   public static readonly PercentToColorConverter Instance = new();
+[METHOD]       L17   public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+[METHOD]       L28   public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+[CLASS]        L34   public sealed class BoolToVisibilityConverter : IValueConverter
+[METHOD]       L36   public static readonly BoolToVisibilityConverter Instance = new();
+[METHOD]       L38   public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+[METHOD]       L41   public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+[CLASS]        L47   public sealed class MonitoringStateConverter : IValueConverter
+[METHOD]       L49   public static readonly MonitoringStateConverter Instance = new();
+[METHOD]       L51   public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+[METHOD]       L54   public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Models\AlertNotification.cs
+--------------------------------------------------------------------------------
+[CLASS]        L3    public sealed class AlertNotification
+[PROPERTY]     L5    public Guid Id { get; init; } = Guid.NewGuid();
+[PROPERTY]     L7    public string MetricName { get; init; } = string.Empty;
+[PROPERTY]     L9    public string Message { get; init; } = string.Empty;
+[PROPERTY]     L11   public DateTime Timestamp { get; init; } = DateTime.Now;
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\ViewModels\DashboardViewModel.cs
+--------------------------------------------------------------------------------
+[CLASS]        L21   public sealed partial class DashboardViewModel : ViewModelBase
+[METHOD]       L35   public ObservableCollection<AlertNotification> Alerts { get; } = new();
+[METHOD]       L39   private readonly ObservableCollection<double> _cpuHistory = new();
+[METHOD]       L40   private readonly ObservableCollection<double> _ramHistory = new();
+[METHOD]       L41   private readonly ObservableCollection<double> _diskHistory = new();
+[PROPERTY]     L43   public ISeries[] CpuSeries { get; }
+[PROPERTY]     L44   public ISeries[] RamSeries { get; }
+[PROPERTY]     L45   public ISeries[] DiskSeries { get; }
+[PROPERTY]     L46   public Axis[] XAxes { get; }
+[PROPERTY]     L47   public Axis[] YAxes { get; }
+[CONSTRUCTOR]  L49   public DashboardViewModel()
+[METHOD]       L117  public void OnSnapshotReceived(SystemSnapshot snapshot)
+[METHOD]       L137  public async void ShowAlert(string metric, string message)
+[METHOD]       L162  private void DismissAlert(AlertNotification alert)
+[METHOD]       L169  private static void AddHistory(ObservableCollection<double> history, double value)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\ViewModels\MainViewModel.cs
+--------------------------------------------------------------------------------
+[CLASS]        L15   public sealed partial class MainViewModel : ViewModelBase
+[PROPERTY]     L20   public DashboardViewModel Dashboard { get; }
+[PROPERTY]     L22   public PluginsViewModel Plugins { get; }
+[PROPERTY]     L24   public SettingsViewModel Settings { get; }
+[CONSTRUCTOR]  L35   public MainViewModel(
+[METHOD]       L60   private async Task StartMonitoringAsync()
+[METHOD]       L69   private async Task StopMonitoringAsync()
+[METHOD]       L78   private async Task ToggleMonitoringAsync()
+[METHOD]       L91   private void Navigate(string tabIndex)
+[METHOD]       L103  private void OnSnapshotReceived(
+[METHOD]       L110  private void OnPluginError(
+[METHOD]       L119  private void OnAlertTriggered(
+[METHOD]       L130  public async Task InitializeAsync()
+[METHOD]       L135  public async Task ShutdownAsync()
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\ViewModels\PluginsViewModel.cs
+--------------------------------------------------------------------------------
+[CLASS]        L10   public sealed partial class PluginViewModel : ViewModelBase
+[CONSTRUCTOR]  L20   public PluginViewModel(IMonitorPlugin plugin)
+[METHOD]       L32   public void MarkSuccess()
+[METHOD]       L41   public void MarkError(string errorMessage)
+[CLASS]        L52   public sealed partial class PluginsViewModel : ViewModelBase
+[METHOD]       L54   public ObservableCollection<PluginViewModel> Plugins { get; } = new();
+[CONSTRUCTOR]  L56   public PluginsViewModel(IEnumerable<IMonitorPlugin> plugins)
+[METHOD]       L63   private void EnableAll()
+[METHOD]       L69   private void DisableAll()
+[METHOD]       L75   public void OnPluginError(string pluginName, string error)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\ViewModels\SettingsViewModel.cs
+--------------------------------------------------------------------------------
+[CLASS]        L16   public sealed partial class SettingsViewModel : ViewModelBase
+[CONSTRUCTOR]  L47   public SettingsViewModel(
+[METHOD]       L83   private async Task SaveAsync()
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\ViewModels\ViewModelBase.cs
+--------------------------------------------------------------------------------
+[CLASS]        L10   public abstract class ViewModelBase : ObservableObject
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Views\DashboardView.xaml.cs
+--------------------------------------------------------------------------------
+[CLASS]        L5    public partial class DashboardView : UserControl
+[CONSTRUCTOR]  L7    public DashboardView() => InitializeComponent();
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Views\MainWindow.xaml.cs
+--------------------------------------------------------------------------------
+[CLASS]        L6    public partial class MainWindow : Window
+[CONSTRUCTOR]  L8    public MainWindow(MainViewModel viewModel)
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Views\PluginsView.xaml.cs
+--------------------------------------------------------------------------------
+[CLASS]        L5    public partial class PluginsView : UserControl
+[CONSTRUCTOR]  L7    public PluginsView() => InitializeComponent();
+
+--------------------------------------------------------------------------------
+FILE: src\SystemMonitor.WPF\Views\SettingsView.xaml.cs
+--------------------------------------------------------------------------------
+[CLASS]        L5    public partial class SettingsView : UserControl
+[CONSTRUCTOR]  L7    public SettingsView() => InitializeComponent();
+
+================================================================================
+SUMMARY
+================================================================================
+  .cs files       : 31
+  .xaml files     : 5
+  Total LoC       : 1839
+  Classes/Records : 40
+  Constructors    : 15
+  Methods         : 84
+  Properties      : 38
+
+Generated: 2026-05-10 20:47:05
