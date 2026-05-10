@@ -16,6 +16,7 @@
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\plugins\SystemMonitor.Plugin.RealtimeData\SystemMonitor.Plugin.RealtimeData.csproj" />
     <ProjectReference Include="..\..\src\SystemMonitor.Core\SystemMonitor.Core.csproj" />
     <ProjectReference Include="..\..\src\SystemMonitor.AppLogic\SystemMonitor.AppLogic.csproj" />
     <ProjectReference Include="..\..\plugins\SystemMonitor.Plugin.FileLogger\SystemMonitor.Plugin.FileLogger.csproj" />

@@ -60,7 +60,72 @@
                     </Grid>
                 </StackPanel>
             </Border>
+            <!-- Realtime Data -->
+            <Border Style="{StaticResource Card}" Margin="0 0 0 12">
 
+                <StackPanel>
+
+                    <StackPanel Orientation="Horizontal"
+                    Margin="0 0 0 12">
+
+                        <TextBlock Text="REALTIME DATA PLUGIN"
+                       FontSize="10"
+                       FontWeight="Bold"
+                       Foreground="{StaticResource TextSecondaryBrush}"
+                       VerticalAlignment="Center"/>
+
+                        <CheckBox IsChecked="{Binding RealTimeDataEnabled}"
+                      Content="Enabled"
+                      Foreground="White"
+                      Margin="16 0 0 0"/>
+
+                    </StackPanel>
+
+                    <!-- Server URL -->
+                    <Grid Margin="0 4">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                       Text="Server URL"
+                       VerticalAlignment="Center"/>
+
+                        <TextBox Grid.Column="1"
+                     Text="{Binding RealTimeDataServerUrl}"
+                     Background="#333"
+                     Foreground="White"
+                     BorderBrush="#555"
+                     Padding="6"/>
+
+                    </Grid>
+
+                    <!-- Reconnect Delay -->
+                    <Grid Margin="0 8 0 0">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="120"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                       Text="Reconnect Delay (seconds)"
+                       VerticalAlignment="Center"/>
+
+                        <TextBox Grid.Column="1"
+                     Text="{Binding RealTimeDataReconnectDelaySeconds}"
+                     Background="#333"
+                     Foreground="White"
+                     BorderBrush="#555"
+                     Padding="6"/>
+
+                    </Grid>
+
+                </StackPanel>
+
+            </Border>
             <!-- API Post -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 12">
                 <StackPanel>

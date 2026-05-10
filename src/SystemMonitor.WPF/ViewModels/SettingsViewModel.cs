@@ -8,6 +8,7 @@ using SystemMonitor.AppLogic.Configuration;
 using SystemMonitor.Core.Interfaces;
 using SystemMonitor.Plugin.ApiPost;
 using SystemMonitor.Plugin.FileLogger;
+using SystemMonitor.Plugin.RealtimeData;
 using SystemMonitor.Plugin.ThresholdAlert;
 
 namespace SystemMonitor.WPF.ViewModels;
@@ -16,6 +17,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
 {
     // Monitoring
     [ObservableProperty] private int _intervalSeconds;
+
+    //Realtime Data 
+    [ObservableProperty] private bool _realTimeDataEnabled;
+    [ObservableProperty] private string _realTimeDataServerUrl = string.Empty;
+    [ObservableProperty] private int _realTimeDataReconnectDelaySeconds;
 
     // File Logger
     [ObservableProperty] private bool _fileLoggerEnabled;
@@ -40,6 +46,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public SettingsViewModel(
         IOptionsMonitor<MonitoringOptions> monitoringOpts,
+        IOptionsMonitor<RealtimeDataOptions> realtimeOpts,
         IOptionsMonitor<FileLoggerOptions> fileOpts,
         IOptionsMonitor<ApiPostOptions> apiOpts,
         IOptionsMonitor<ThresholdAlertOptions> alertOpts,
@@ -53,6 +60,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
         FileLoggerEnabled = fileOpts.CurrentValue.Enabled;
         FileLoggerPath = fileOpts.CurrentValue.FilePath;
         FileLoggerMaxSizeMb = fileOpts.CurrentValue.MaxFileSizeMb;
+
+        // Real Time Data
+        RealTimeDataEnabled = realtimeOpts.CurrentValue.Enabled;
+        RealTimeDataServerUrl = realtimeOpts.CurrentValue.ServerUrl;
+        RealTimeDataReconnectDelaySeconds = realtimeOpts.CurrentValue.ReconnectDelaySeconds;
 
         // API Post
         ApiPostEnabled = apiOpts.CurrentValue.Enabled;
@@ -90,6 +102,12 @@ public sealed partial class SettingsViewModel : ViewModelBase
                     ["Enabled"] = FileLoggerEnabled,
                     ["FilePath"] = FileLoggerPath,
                     ["MaxFileSizeMb"] = FileLoggerMaxSizeMb
+                },
+                ["RealtimeData"] = new JsonObject
+                {
+                    ["Enabled"] = RealTimeDataEnabled,
+                    ["ServerUrl"] = RealTimeDataServerUrl,
+                    ["ReconnectDelaySeconds"] = RealTimeDataReconnectDelaySeconds
                 },
                 ["ApiPost"] = new JsonObject
                 {

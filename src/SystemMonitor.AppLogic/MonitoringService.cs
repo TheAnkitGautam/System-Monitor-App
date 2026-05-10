@@ -142,7 +142,7 @@ public sealed class MonitoringService : IMonitoringService, IDisposable
             snapshot = await CollectSnapshotAsync()
                 .ConfigureAwait(false);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return;
         }
@@ -186,7 +186,7 @@ public sealed class MonitoringService : IMonitoringService, IDisposable
                     snapshot = await CollectSnapshotAsync()
                         .ConfigureAwait(false);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     continue;
                 }
@@ -218,7 +218,7 @@ public sealed class MonitoringService : IMonitoringService, IDisposable
         {
             // Expected if timer disposed during shutdown
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }

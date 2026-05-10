@@ -12,6 +12,6 @@ public interface IMonitoringService
 }
 public sealed class PluginErrorEventArgs : EventArgs
 {
-    public string    PluginName { get; init; } = string.Empty;
-    public Exception Exception  { get; init; } = null!;
+    public string PluginName { get; init; } = string.Empty;
+    public Exception Exception { get; init; } = null!;
 }

@@ -211,10 +211,6 @@
                                    FontWeight="Bold"
                                    Foreground="{StaticResource TextBrush}"/>
 
-                        <TextBlock Text="Live telemetry"
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
-
                     </StackPanel>
 
                 </StackPanel>
