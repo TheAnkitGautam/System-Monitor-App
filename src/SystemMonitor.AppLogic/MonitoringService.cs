@@ -133,13 +133,48 @@ public sealed class MonitoringService : IMonitoringService, IDisposable
     // ─────────────────────────────────────────────────────────────
     // MAIN LOOP
     // ─────────────────────────────────────────────────────────────
+    private async Task ProcessSnapshotAsync()
+    {
+        SystemSnapshot snapshot;
 
+        try
+        {
+            snapshot = await CollectSnapshotAsync()
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            return;
+        }
+
+        // Notify UI
+        SnapshotReady?.Invoke(this, snapshot);
+
+        // Execute enabled plugins concurrently
+        var enabledPlugins = _plugins
+            .Where(p => p.IsEnabled)
+            .ToList();
+
+        if (enabledPlugins.Count > 0)
+        {
+            await Task.WhenAll(
+                enabledPlugins.Select(
+                    p => SafeInvokePluginAsync(
+                        p,
+                        snapshot)))
+                .ConfigureAwait(false);
+        }
+    }
     private async Task RunLoopAsync(
         PeriodicTimer timer,
         CancellationToken ct)
     {
         try
         {
+            // Immediate first update
+            await ProcessSnapshotAsync()
+                .ConfigureAwait(false);
+
             while (await timer
                 .WaitForNextTickAsync(ct)
                 .ConfigureAwait(false))
