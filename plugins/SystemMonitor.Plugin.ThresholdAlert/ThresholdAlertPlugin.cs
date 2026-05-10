@@ -4,93 +4,132 @@ using SystemMonitor.Core.Models;
 
 namespace SystemMonitor.Plugin.ThresholdAlert;
 
-/// <summary>Configuration for the threshold-alert plugin.</summary>
+// Configuration for the threshold-alert plugin
 public sealed class ThresholdAlertOptions
 {
     public const string SectionName = "Plugins:ThresholdAlert";
 
-    public bool   Enabled              { get; set; } = true;
-    /// <summary>CPU % above which an alert fires. 0 = disabled.</summary>
-    public double CpuThreshold         { get; set; } = 80;
-    /// <summary>RAM usage % above which an alert fires. 0 = disabled.</summary>
-    public double RamThresholdPercent  { get; set; } = 85;
-    /// <summary>Disk usage % above which an alert fires. 0 = disabled.</summary>
-    public double DiskThresholdPercent { get; set; } = 90;
-    /// <summary>Minimum seconds between repeat alerts for the same metric.</summary>
-    public int    CooldownSeconds      { get; set; } = 30;
+    public bool Enabled { get; set; }
+
+    public double CpuThreshold { get; set; }
+
+    public double RamThresholdPercent { get; set; }
+
+    public double DiskThresholdPercent { get; set; }
+
+    public int CooldownSeconds { get; set; }
 }
 
-/// <summary>Payload raised with the <see cref="ThresholdAlertPlugin.AlertTriggered"/> event.</summary>
 public sealed class AlertEventArgs : EventArgs
 {
-    public string   MetricName { get; init; } = string.Empty;
-    public double   Value      { get; init; }
-    public double   Threshold  { get; init; }
-    public string   Message    { get; init; } = string.Empty;
-    public DateTime TriggeredAt{ get; init; } = DateTime.Now;
+    public string MetricName { get; init; } = string.Empty;
+
+    public double Value { get; init; }
+
+    public double Threshold { get; init; }
+
+    public string Message { get; init; } = string.Empty;
+
+    public DateTime TriggeredAt { get; init; } = DateTime.Now;
 }
 
-/// <summary>
-/// Plugin that monitors metric values against configured thresholds and fires
-/// <see cref="AlertTriggered"/> when any threshold is exceeded.
-///
-/// A per-metric cooldown prevents alert storms when a metric stays above threshold
-/// for multiple consecutive polling cycles.
-/// </summary>
 public sealed class ThresholdAlertPlugin : IMonitorPlugin
 {
-    private readonly ThresholdAlertOptions _options;
+    private readonly IOptionsMonitor<ThresholdAlertOptions> _options;
+
     private readonly Dictionary<string, DateTime> _lastAlertTimes = new();
 
-    public string Name      => "Threshold Alert";
-    public bool   IsEnabled { get; set; }
+    public string Name => "Threshold Alert";
 
-    /// <summary>
-    /// Raised whenever a metric crosses its configured threshold.
-    /// The WPF layer subscribes to this to show toast notifications.
-    /// </summary>
+    public bool IsEnabled { get; set; }
+
     public event EventHandler<AlertEventArgs>? AlertTriggered;
 
-    public ThresholdAlertPlugin(IOptions<ThresholdAlertOptions> options)
+    public ThresholdAlertPlugin(
+        IOptionsMonitor<ThresholdAlertOptions> options)
     {
-        _options  = options.Value;
-        IsEnabled = _options.Enabled;
+        _options = options;
+
+        // Apply initial settings
+        ApplyOptions(_options.CurrentValue);
+
+        // React to runtime config changes
+        _options.OnChange(ApplyOptions);
     }
 
-    /// <inheritdoc/>
     public Task OnMetricsCollectedAsync(SystemSnapshot snapshot)
     {
-        if (!IsEnabled) return Task.CompletedTask;
+        if (!IsEnabled)
+            return Task.CompletedTask;
 
-        CheckThreshold("CPU",  snapshot.CpuPercent,  _options.CpuThreshold,
-            $"CPU usage is {snapshot.CpuPercent:F1}% (threshold: {_options.CpuThreshold}%)");
+        var options = _options.CurrentValue;
 
-        CheckThreshold("RAM",  snapshot.RamPercent,  _options.RamThresholdPercent,
-            $"RAM usage is {snapshot.RamPercent:F1}% ({snapshot.RamUsedMb} / {snapshot.RamTotalMb} MB)");
+        CheckThreshold(
+            metric: "CPU",
+            value: snapshot.CpuPercent,
+            threshold: options.CpuThreshold,
+            message:
+                $"CPU usage is {snapshot.CpuPercent:F1}% " +
+                $"(threshold: {options.CpuThreshold:F1}%)");
 
-        CheckThreshold("Disk", snapshot.DiskPercent, _options.DiskThresholdPercent,
-            $"Disk usage is {snapshot.DiskPercent:F1}% ({snapshot.DiskUsedMb} / {snapshot.DiskTotalMb} MB)");
+        CheckThreshold(
+            metric: "RAM",
+            value: snapshot.RamPercent,
+            threshold: options.RamThresholdPercent,
+            message:
+                $"RAM usage is {snapshot.RamPercent:F1}% " +
+                $"({snapshot.RamUsedMb} / {snapshot.RamTotalMb} MB)");
+
+        CheckThreshold(
+            metric: "Disk",
+            value: snapshot.DiskPercent,
+            threshold: options.DiskThresholdPercent,
+            message:
+                $"Disk usage is {snapshot.DiskPercent:F1}% " +
+                $"({snapshot.DiskUsedMb} / {snapshot.DiskTotalMb} MB)");
 
         return Task.CompletedTask;
     }
 
-    private void CheckThreshold(string metric, double value, double threshold, string message)
+    private void CheckThreshold(
+        string metric,
+        double value,
+        double threshold,
+        string message)
     {
-        if (threshold <= 0 || value < threshold) return;
-
-        // Enforce cooldown to prevent alert storms
-        if (_lastAlertTimes.TryGetValue(metric, out var last) &&
-            (DateTime.Now - last).TotalSeconds < _options.CooldownSeconds)
+        if (threshold <= 0 || value < threshold)
             return;
+
+        var options = _options.CurrentValue;
+
+        // Prevent alert spam using cooldown
+        if (_lastAlertTimes.TryGetValue(metric, out var lastAlert))
+        {
+            var secondsSinceLastAlert =
+                (DateTime.Now - lastAlert).TotalSeconds;
+
+            if (secondsSinceLastAlert < options.CooldownSeconds)
+            {
+                return;
+            }
+        }
 
         _lastAlertTimes[metric] = DateTime.Now;
 
-        AlertTriggered?.Invoke(this, new AlertEventArgs
-        {
-            MetricName = metric,
-            Value      = value,
-            Threshold  = threshold,
-            Message    = message
-        });
+        AlertTriggered?.Invoke(
+            this,
+            new AlertEventArgs
+            {
+                MetricName = metric,
+                Value = value,
+                Threshold = threshold,
+                Message = message,
+                TriggeredAt = DateTime.Now
+            });
+    }
+
+    private void ApplyOptions(ThresholdAlertOptions options)
+    {
+        IsEnabled = options.Enabled;
     }
 }

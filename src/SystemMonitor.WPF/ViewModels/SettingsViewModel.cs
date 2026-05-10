@@ -1,67 +1,70 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Options;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using SystemMonitor.AppLogic.Configuration;
+using SystemMonitor.Core.Interfaces;
 using SystemMonitor.Plugin.ApiPost;
 using SystemMonitor.Plugin.FileLogger;
 using SystemMonitor.Plugin.ThresholdAlert;
-using Microsoft.Extensions.Options;
-using System.IO;
 
 namespace SystemMonitor.WPF.ViewModels;
 
-/// <summary>
-/// ViewModel for the Settings view. Exposes all configurable values as two-way
-/// bindable properties. On <see cref="SaveCommand"/>, writes changes back to
-/// appsettings.json so they persist across restarts.
-/// </summary>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
-    // ── Monitoring ───────────────────────────────────────────────────────────
+    // Monitoring
     [ObservableProperty] private int _intervalSeconds;
 
-    // ── File Logger ──────────────────────────────────────────────────────────
-    [ObservableProperty] private bool   _fileLoggerEnabled;
+    // File Logger
+    [ObservableProperty] private bool _fileLoggerEnabled;
     [ObservableProperty] private string _fileLoggerPath = string.Empty;
-    [ObservableProperty] private int    _fileLoggerMaxSizeMb;
+    [ObservableProperty] private int _fileLoggerMaxSizeMb;
 
-    // ── API Post ─────────────────────────────────────────────────────────────
-    [ObservableProperty] private bool   _apiPostEnabled;
+    // API Post         
+    [ObservableProperty] private bool _apiPostEnabled;
     [ObservableProperty] private string _apiEndpoint = string.Empty;
-    [ObservableProperty] private int    _apiTimeoutSeconds;
+    [ObservableProperty] private int _apiTimeoutSeconds;
 
-    // ── Threshold Alert ──────────────────────────────────────────────────────
-    [ObservableProperty] private bool   _alertEnabled;
+    // Threshold Alert
+    [ObservableProperty] private bool _alertEnabled;
     [ObservableProperty] private double _cpuThreshold;
     [ObservableProperty] private double _ramThreshold;
     [ObservableProperty] private double _diskThreshold;
-    [ObservableProperty] private int    _cooldownSeconds;
+    [ObservableProperty] private int _cooldownSeconds;
 
     [ObservableProperty] private string _saveStatus = string.Empty;
 
+    private readonly IMonitoringService _monitoringService;
+
     public SettingsViewModel(
-        IOptions<MonitoringOptions>      monitoringOpts,
-        IOptions<FileLoggerOptions>      fileOpts,
-        IOptions<ApiPostOptions>         apiOpts,
-        IOptions<ThresholdAlertOptions>  alertOpts)
+        IOptionsMonitor<MonitoringOptions> monitoringOpts,
+        IOptionsMonitor<FileLoggerOptions> fileOpts,
+        IOptionsMonitor<ApiPostOptions> apiOpts,
+        IOptionsMonitor<ThresholdAlertOptions> alertOpts,
+        IMonitoringService monitoringService)
     {
-        // Load current values
-        IntervalSeconds      = monitoringOpts.Value.IntervalSeconds;
+        _monitoringService = monitoringService;
 
-        FileLoggerEnabled    = fileOpts.Value.Enabled;
-        FileLoggerPath       = fileOpts.Value.FilePath;
-        FileLoggerMaxSizeMb  = fileOpts.Value.MaxFileSizeMb;
+        // Monitoring
+        IntervalSeconds = monitoringOpts.CurrentValue.IntervalSeconds;
+        // File Logger
+        FileLoggerEnabled = fileOpts.CurrentValue.Enabled;
+        FileLoggerPath = fileOpts.CurrentValue.FilePath;
+        FileLoggerMaxSizeMb = fileOpts.CurrentValue.MaxFileSizeMb;
 
-        ApiPostEnabled       = apiOpts.Value.Enabled;
-        ApiEndpoint          = apiOpts.Value.Endpoint;
-        ApiTimeoutSeconds    = apiOpts.Value.TimeoutSeconds;
+        // API Post
+        ApiPostEnabled = apiOpts.CurrentValue.Enabled;
+        ApiEndpoint = apiOpts.CurrentValue.Endpoint;
+        ApiTimeoutSeconds = apiOpts.CurrentValue.TimeoutSeconds;
 
-        AlertEnabled         = alertOpts.Value.Enabled;
-        CpuThreshold         = alertOpts.Value.CpuThreshold;
-        RamThreshold         = alertOpts.Value.RamThresholdPercent;
-        DiskThreshold        = alertOpts.Value.DiskThresholdPercent;
-        CooldownSeconds      = alertOpts.Value.CooldownSeconds;
+        // Threshold Alert
+        AlertEnabled = alertOpts.CurrentValue.Enabled;
+        CpuThreshold = alertOpts.CurrentValue.CpuThreshold;
+        RamThreshold = alertOpts.CurrentValue.RamThresholdPercent;
+        DiskThreshold = alertOpts.CurrentValue.DiskThresholdPercent;
+        CooldownSeconds = alertOpts.CurrentValue.CooldownSeconds;
     }
 
     [RelayCommand]
@@ -72,8 +75,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
             string path = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
 
             // Read existing JSON to preserve any keys we don't manage
-            string raw  = File.Exists(path) ? await File.ReadAllTextAsync(path) : "{}";
-            var    root = JsonNode.Parse(raw) as JsonObject ?? new JsonObject();
+            string raw = File.Exists(path) ? await File.ReadAllTextAsync(path) : "{}";
+            var root = JsonNode.Parse(raw) as JsonObject ?? new JsonObject();
 
             // Write back all sections
             root["Monitoring"] = new JsonObject
@@ -84,30 +87,31 @@ public sealed partial class SettingsViewModel : ViewModelBase
             {
                 ["FileLogger"] = new JsonObject
                 {
-                    ["Enabled"]      = FileLoggerEnabled,
-                    ["FilePath"]     = FileLoggerPath,
-                    ["MaxFileSizeMb"]= FileLoggerMaxSizeMb
+                    ["Enabled"] = FileLoggerEnabled,
+                    ["FilePath"] = FileLoggerPath,
+                    ["MaxFileSizeMb"] = FileLoggerMaxSizeMb
                 },
                 ["ApiPost"] = new JsonObject
                 {
-                    ["Enabled"]        = ApiPostEnabled,
-                    ["Endpoint"]       = ApiEndpoint,
+                    ["Enabled"] = ApiPostEnabled,
+                    ["Endpoint"] = ApiEndpoint,
                     ["TimeoutSeconds"] = ApiTimeoutSeconds
                 },
                 ["ThresholdAlert"] = new JsonObject
                 {
-                    ["Enabled"]              = AlertEnabled,
-                    ["CpuThreshold"]         = CpuThreshold,
-                    ["RamThresholdPercent"]  = RamThreshold,
+                    ["Enabled"] = AlertEnabled,
+                    ["CpuThreshold"] = CpuThreshold,
+                    ["RamThresholdPercent"] = RamThreshold,
                     ["DiskThresholdPercent"] = DiskThreshold,
-                    ["CooldownSeconds"]      = CooldownSeconds
+                    ["CooldownSeconds"] = CooldownSeconds
                 }
             };
 
             var writeOptions = new JsonSerializerOptions { WriteIndented = true };
             await File.WriteAllTextAsync(path, root.ToJsonString(writeOptions));
-
-            SaveStatus = $"Saved at {DateTime.Now:HH:mm:ss}. Restart to apply interval changes.";
+            await Task.Delay(500);
+            await _monitoringService.RestartAsync();
+            SaveStatus = $"Saved at {DateTime.Now:HH:mm:ss}. Settings applied successfully.";
         }
         catch (Exception ex)
         {

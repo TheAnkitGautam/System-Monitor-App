@@ -10,7 +10,7 @@
             <TextBlock Text="Changes are saved to appsettings.json and take effect on next start (except plugin toggles)."
                        FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" Margin="0 0 0 20"/>
 
-            <!-- ── Monitoring ──────────────────────────────────────── -->
+            <!-- Monitoring -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 12">
                 <StackPanel>
                     <TextBlock Text="MONITORING" FontSize="10" FontWeight="Bold"
@@ -30,7 +30,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ── File Logger ─────────────────────────────────────── -->
+            <!-- File Logger -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 12">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
@@ -61,7 +61,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ── API Post ────────────────────────────────────────── -->
+            <!-- API Post -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 12">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
@@ -92,7 +92,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ── Threshold Alerts ───────────────────────────────── -->
+            <!-- Threshold Alerts -->
             <Border Style="{StaticResource Card}" Margin="0 0 0 12">
                 <StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0 0 0 12">
@@ -127,7 +127,7 @@
                 </StackPanel>
             </Border>
 
-            <!-- ── Save ───────────────────────────────────────────── -->
+            <!-- Save -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 4 0 0">
                 <TextBlock Text="{Binding SaveStatus}"
                            Foreground="#4CAF50" FontSize="11"

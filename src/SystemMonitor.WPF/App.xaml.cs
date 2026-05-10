@@ -1,8 +1,6 @@
-using Hardcodet.Wpf.TaskbarNotification;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Windows;
 using SystemMonitor.AppLogic.Extensions;
 using SystemMonitor.Core.Interfaces;
@@ -15,17 +13,9 @@ using SystemMonitor.WPF.Views;
 
 namespace SystemMonitor.WPF;
 
-/// <summary>
-/// Application entry point. Builds the DI container using <see cref="IHost"/> and
-/// manages WPF lifetime alongside the hosted monitoring service.
-///
-/// DI Registration order follows Clean Architecture:
-///   Infrastructure → Application → Plugins → WPF ViewModels → WPF Views
-/// </summary>
 public partial class App : System.Windows.Application
 {
 	private IHost? _host;
-	private TaskbarIcon? _trayIcon;
 
 	protected override async void OnStartup(StartupEventArgs e)
 	{
@@ -37,23 +27,16 @@ public partial class App : System.Windows.Application
 				cfg.SetBasePath(AppContext.BaseDirectory);
 				cfg.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 			})
-			.ConfigureLogging(logging =>
-			{
-				logging.ClearProviders();
-				logging.AddConsole();
-				logging.AddDebug();
-				logging.SetMinimumLevel(LogLevel.Debug);
-			})
 			.ConfigureServices((ctx, services) =>
 			{
-				// ── Infrastructure ──────────────────────────────────────────
+				// Infrastructure
 				services.AddSingleton<ISystemMetricsProvider>(
 					_ => MetricsProviderFactory.Create());
 
-				// ── Application ─────────────────────────────────────────────
+				// Application
 				services.AddMonitoringServices(ctx.Configuration);
 
-				// ── Plugin options ───────────────────────────────────────────
+				// Plugin options
 				services.Configure<FileLoggerOptions>(
 					ctx.Configuration.GetSection(FileLoggerOptions.SectionName));
 				services.Configure<ApiPostOptions>(
@@ -61,7 +44,6 @@ public partial class App : System.Windows.Application
 				services.Configure<ThresholdAlertOptions>(
 					ctx.Configuration.GetSection(ThresholdAlertOptions.SectionName));
 
-				// ── Plugins (registered as IMonitorPlugin for enumeration) ──
 				services.AddHttpClient<ApiPostPlugin>(); // manages HttpClient lifetime
 				services.AddSingleton<FileLoggerPlugin>();
 				services.AddSingleton<ApiPostPlugin>();
@@ -74,21 +56,18 @@ public partial class App : System.Windows.Application
 				services.AddSingleton<IMonitorPlugin>(sp =>
 					sp.GetRequiredService<ThresholdAlertPlugin>());
 
-				// ── WPF ViewModels ───────────────────────────────────────────
+				// WPF ViewModels
 				services.AddTransient<DashboardViewModel>();
 				services.AddTransient<PluginsViewModel>();
 				services.AddTransient<SettingsViewModel>();
 				services.AddSingleton<MainViewModel>();
 
-				// ── WPF Views ────────────────────────────────────────────────
+				// WPF Views
 				services.AddSingleton<MainWindow>();
 			})
 			.Build();
 
 		await _host.StartAsync();
-
-		// Set up system tray icon
-		//_trayIcon = (TaskbarIcon)FindResource("TrayIcon");
 
 		// Show main window
 		var mainWindow = _host.Services.GetRequiredService<MainWindow>();
@@ -110,7 +89,6 @@ public partial class App : System.Windows.Application
 			_host.Dispose();
 		}
 
-		_trayIcon?.Dispose();
 		base.OnExit(e);
 	}
 }
