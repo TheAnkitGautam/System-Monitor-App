@@ -3,98 +3,315 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:SystemMonitor.WPF.Views"
         Title="System Monitor"
-        Height="700" Width="1000"
-        MinHeight="600" MinWidth="860"
+        Height="700"
+        Width="1100"
+        MinHeight="600"
+        MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource BackgroundBrush}">
+        Background="#111827">
 
-    <Window.InputBindings>
-        <KeyBinding Key="F5" Command="{Binding ToggleMonitoringCommand}"/>
-    </Window.InputBindings>
+    <!-- ───────────────────────────────────────────── -->
+    <!-- Resources -->
+    <!-- ───────────────────────────────────────────── -->
+
+    <Window.Resources>
+
+        <!-- Colors -->
+        <SolidColorBrush x:Key="BackgroundBrush" Color="#111827"/>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#1F2937"/>
+        <SolidColorBrush x:Key="SurfaceLightBrush" Color="#374151"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#3B82F6"/>
+        <SolidColorBrush x:Key="TextBrush" Color="White"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="#9CA3AF"/>
+
+        <!-- Sidebar Button -->
+        <Style x:Key="SidebarButton"
+               TargetType="Button">
+
+            <Setter Property="Background"
+                    Value="Transparent"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource TextBrush}"/>
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="Padding"
+                    Value="18 12"/>
+
+            <Setter Property="Margin"
+                    Value="0 4"/>
+
+            <Setter Property="FontSize"
+                    Value="14"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10">
+
+                            <ContentPresenter Margin="8 0"
+                                              VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Background"
+                                        Value="#2B3440"/>
+
+                            </Trigger>
+
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Background"
+                                        Value="#394452"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+        <!-- Primary Button -->
+        <Style x:Key="PrimaryButton"
+               TargetType="Button">
+
+            <Setter Property="Background"
+                    Value="{StaticResource AccentBrush}"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="Padding"
+                    Value="14 8"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="Border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10">
+
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Opacity"
+                                        Value="0.9"/>
+
+                            </Trigger>
+
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+
+                                <Setter TargetName="Border"
+                                        Property="Opacity"
+                                        Value="0.75"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+    </Window.Resources>
+
+    <!-- ───────────────────────────────────────────── -->
+    <!-- Layout -->
+    <!-- ───────────────────────────────────────────── -->
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="56"/>   <!-- Header -->
-            <RowDefinition Height="*"/>    <!-- Content -->
-            <RowDefinition Height="28"/>   <!-- Status bar -->
-        </Grid.RowDefinitions>
 
-        <!-- ── Header ──────────────────────────────────────────────────── -->
-        <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}">
-            <Grid Margin="16 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-                <!-- Logo + Title -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="⬡" FontSize="22" Foreground="{StaticResource AccentBrush}"
-                               VerticalAlignment="Center" Margin="0 0 8 0"/>
-                    <TextBlock Text="System Monitor" FontSize="16" FontWeight="Bold"
-                               VerticalAlignment="Center"/>
+        <!-- ───────────────────────────────────────── -->
+        <!-- Sidebar -->
+        <!-- ───────────────────────────────────────── -->
+
+        <Border Grid.Column="0"
+                Background="{StaticResource SurfaceBrush}"
+                BorderBrush="#2B2B2B"
+                BorderThickness="0 0 1 0">
+
+            <Grid>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="80"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Logo -->
+                <StackPanel Grid.Row="0"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="20 0">
+
+                    <TextBlock Text="⬡"
+                               FontSize="28"
+                               Foreground="{StaticResource AccentBrush}"
+                               Margin="0 0 10 0"/>
+
+                    <StackPanel>
+
+                        <TextBlock Text="System Monitor"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextBrush}"/>
+
+                        <TextBlock Text="Live telemetry"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+
+                    </StackPanel>
+
                 </StackPanel>
 
-                <!-- Nav Tabs -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal"
-                            HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <RadioButton Content="Dashboard"  GroupName="Nav" IsChecked="True"
-                                 Style="{StaticResource {x:Type RadioButton}}"
-                                 Command="{Binding NavigateCommand}" CommandParameter="0"
-                                 Margin="4 0"/>
-                    <RadioButton Content="Plugins"    GroupName="Nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="1"
-                                 Margin="4 0"/>
-                    <RadioButton Content="Settings"   GroupName="Nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="2"
-                                 Margin="4 0"/>
+                <!-- Navigation -->
+                <StackPanel Grid.Row="1"
+                            Margin="12 20">
+
+                    <Button Style="{StaticResource SidebarButton}"
+                            Content="📊 Dashboard"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="0"/>
+
+                    <Button Style="{StaticResource SidebarButton}"
+                            Content="🧩 Plugins"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="1"/>
+
+                    <Button Style="{StaticResource SidebarButton}"
+                            Content="⚙ Settings"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="2"/>
+
                 </StackPanel>
 
-                <!-- Start/Stop Button -->
-                <Button Grid.Column="2" Style="{StaticResource PrimaryButton}"
-                        Content="{Binding IsMonitoring, Converter={StaticResource MonitoringState}}"
-                        Command="{Binding ToggleMonitoringCommand}"
-                        Width="100" VerticalAlignment="Center"/>
+                <!-- Bottom -->
+                <StackPanel Grid.Row="2"
+                            Margin="16">
+
+                    <Button Style="{StaticResource PrimaryButton}"
+                            Height="42"
+                            Margin="0 0 0 12"
+                            Content="{Binding IsMonitoring,
+                                              Converter={StaticResource MonitoringState}}"
+                            Command="{Binding ToggleMonitoringCommand}"/>
+
+                    <TextBlock Text="{Binding StatusText}"
+                               FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               TextWrapping="Wrap"/>
+
+                </StackPanel>
+
             </Grid>
+
         </Border>
 
-        <!-- ── Main Content (TabControl hidden tabs) ─────────────────── -->
-        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}"
-                    Background="Transparent" BorderThickness="0"
-                    TabStripPlacement="Left">
-            <TabControl.Template>
-                <ControlTemplate TargetType="TabControl">
-                    <!-- Only show ContentPresenter; tabs are driven by header RadioButtons -->
-                    <ContentPresenter ContentSource="SelectedContent"/>
-                </ControlTemplate>
-            </TabControl.Template>
+        <!-- ───────────────────────────────────────── -->
+        <!-- Main Content -->
+        <!-- ───────────────────────────────────────── -->
 
-            <TabItem>
-                <views:DashboardView DataContext="{Binding Dashboard}"/>
-            </TabItem>
-            <TabItem>
-                <views:PluginsView DataContext="{Binding Plugins}"/>
-            </TabItem>
-            <TabItem>
-                <views:SettingsView DataContext="{Binding Settings}"/>
-            </TabItem>
-        </TabControl>
+        <Grid Grid.Column="1"
+              Background="{StaticResource BackgroundBrush}">
 
-        <!-- ── Status Bar ─────────────────────────────────────────────── -->
-        <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}">
-            <Grid Margin="12 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="{Binding StatusText}"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontSize="11" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="1" Text="F5 — Toggle Monitoring"
-                           Foreground="{StaticResource TextSecondaryBrush}"
-                           FontSize="10" VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
+            <TabControl SelectedIndex="{Binding SelectedTabIndex}"
+                        Background="Transparent"
+                        BorderThickness="0">
+
+                <!-- Hide actual tabs -->
+                <TabControl.Template>
+
+                    <ControlTemplate TargetType="TabControl">
+
+                        <ContentPresenter ContentSource="SelectedContent"/>
+
+                    </ControlTemplate>
+
+                </TabControl.Template>
+
+                <!-- Dashboard -->
+                <TabItem>
+
+                    <views:DashboardView
+                        DataContext="{Binding Dashboard}"/>
+
+                </TabItem>
+
+                <!-- Plugins -->
+                <TabItem>
+
+                    <views:PluginsView
+                        DataContext="{Binding Plugins}"/>
+
+                </TabItem>
+
+                <!-- Settings -->
+                <TabItem>
+
+                    <views:SettingsView
+                        DataContext="{Binding Settings}"/>
+
+                </TabItem>
+
+            </TabControl>
+
+        </Grid>
+
     </Grid>
+
 </Window>
